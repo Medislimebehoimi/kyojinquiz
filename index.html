@@ -147,14 +147,17 @@ function submitGuess() {
     if (!guessName) return;
     
     guessCount++;
-    usedPlayerNames.push(guessName); // リストに追加
+    usedPlayerNames.push(guessName);
     const guessPlayer = players.find(p => p.n === guessName);
     addResultRow(guessPlayer);
-    updateDropdown(); // ドロップダウンを更新
+    updateDropdown();
 
     if (guessName === answer.n) {
+        // 自力正解時のみ画像を表示する
         winImage.src = (guessCount <= 5) ? IMG_EXCELLENT : IMG_GOOD;
-        resultMsg.innerText = (guessCount <= 5) ? `${guessCount}手で正解！あっぱれ！` : `${guessCount}手もかければ誰だって正解できる！喝だ！`;
+        imageContainer.style.display = "block"; // ここで画像コンテナを表示
+        
+        resultMsg.innerText = (guessCount <= 5) ? `${guessCount}手で正解！あっぱれ！` : `${guessCount}手もかければ誰でも正解できる！喝だ！`;
         endGame();
     } else {
         if (guessCount === 5) giveHint(1);
@@ -165,11 +168,15 @@ function submitGuess() {
 function giveUp() {
     if (!confirm("本当にギブアップしますか？")) return;
     resultMsg.innerText = `正解は「${answer.n}」でした！`;
+    
+    // ギブアップ時は画像を表示しない
+    imageContainer.style.display = "none"; 
+    
     endGame();
 }
 
 function endGame() {
-    imageContainer.style.display = "block";
+    // imageContainer.style.display = "block"; // この行を削除またはコメントアウト
     submitBtn.disabled = true;
     giveupBtn.disabled = true;
     playerSelect.disabled = true;
@@ -218,3 +225,4 @@ initGame();
 </script>
 </body>
 </html>
+
