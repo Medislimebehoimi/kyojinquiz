@@ -21,8 +21,12 @@
         .submit-btn { background-color: var(--orange); color: white; }
         .giveup-btn { background-color: #666; color: white; }
         .reset-btn { background-color: #ffffff; color: #000000; display: none; margin: 20px auto; }
+        
+        /* メッセージと画像を独立させる */
+        #result-message { color: var(--orange); margin-top: 20px; min-height: 1.5em; }
         #result-image-container { display: none; margin: 20px auto; max-width: 450px; }
         #result-image-container img { width: 100%; border-radius: 10px; border: 4px solid var(--orange); }
+
         #hint-container { margin-top: 20px; min-height: 2.8em; line-height: 1.4; }
         #hint-display-1 { color: #ffad33; font-weight: bold; }
         #hint-display-2 { color: #FFD700; font-weight: bold; }
@@ -40,8 +44,8 @@
         <button class="btn giveup-btn" id="giveupBtn" onclick="giveUp()">ギブアップ</button>
     </div>
 
+    <h2 id="result-message"></h2>
     <div id="result-image-container">
-        <h2 id="result-message" style="color: var(--orange);"></h2>
         <img id="winImage" src="" alt="正解画像">
     </div>
 
@@ -98,7 +102,7 @@ const players = [
 
 let answer;
 let guessCount = 0;
-let usedPlayerNames = []; // 回答済み選手を記録
+let usedPlayerNames = [];
 const hintDisplay1 = document.getElementById('hint-display-1');
 const hintDisplay2 = document.getElementById('hint-display-2');
 const playerSelect = document.getElementById('playerSelect');
@@ -115,9 +119,10 @@ function initGame() {
     usedPlayerNames = [];
     hintDisplay1.innerText = "";
     hintDisplay2.innerText = "";
+    resultMsg.innerText = "";
     resetBtn.style.display = "none";
     imageContainer.style.display = "none";
-    winImage.src = ""; // ここにも追加しておくと安心です
+    winImage.src = "";
     submitBtn.disabled = false;
     giveupBtn.disabled = false;
     playerSelect.disabled = false;
@@ -127,14 +132,11 @@ function initGame() {
 function updateDropdown() {
     playerSelect.innerHTML = '<option value="">選手を選択...</option>';
     const posOrder = { "投手": 1, "捕手": 2, "内野手": 3, "外野手": 4 };
-    
-    // 既答選手を除外してソート
     const availablePlayers = players.filter(p => !usedPlayerNames.includes(p.n));
     const sortedPlayers = availablePlayers.sort((a, b) => {
         if (posOrder[a.p] !== posOrder[b.p]) return posOrder[a.p] - posOrder[b.p];
         return a.n.localeCompare(b.n, 'ja');
     });
-
     sortedPlayers.forEach(p => {
         const opt = document.createElement('option');
         opt.value = p.n;
@@ -146,7 +148,6 @@ function updateDropdown() {
 function submitGuess() {
     const guessName = playerSelect.value;
     if (!guessName) return;
-    
     guessCount++;
     usedPlayerNames.push(guessName);
     const guessPlayer = players.find(p => p.n === guessName);
@@ -154,10 +155,8 @@ function submitGuess() {
     updateDropdown();
 
     if (guessName === answer.n) {
-        // 自力正解時のみ画像を表示する
         winImage.src = (guessCount <= 5) ? IMG_EXCELLENT : IMG_GOOD;
-        imageContainer.style.display = "block"; // ここで画像コンテナを表示
-        
+        imageContainer.style.display = "block";
         resultMsg.innerText = (guessCount <= 5) ? `${guessCount}手で正解！あっぱれ！` : `${guessCount}手もかければ誰でも正解できる！喝だ！`;
         endGame();
     } else {
@@ -168,23 +167,12 @@ function submitGuess() {
 
 function giveUp() {
     if (!confirm("本当にギブアップしますか？")) return;
-    
-    // 1. 正解メッセージをセット
-    resultMsg.innerText = `正解は「${answer.n}」でした！`;
-    
-    // 2. 「箱」は見せる（メッセージを表示するため）
-    imageContainer.style.display = "block"; 
-    
-    // 3. 「画像」だけをピンポイントで消す（枠も文字も出さない）
-    winImage.style.display = "none";
-    winImage.src = ""; 
-    
-    // 4. ゲーム終了処理
+    resultMsg.innerText = `正解は「${answer.n}」でした。`;
+    imageContainer.style.display = "none"; 
     endGame();
 }
 
 function endGame() {
-    // imageContainer.style.display = "block"; // この行を削除またはコメントアウト
     submitBtn.disabled = true;
     giveupBtn.disabled = true;
     playerSelect.disabled = true;
@@ -198,8 +186,8 @@ function resetGame() {
 }
 
 function giveHint(level) {
-    if (level === 1) hintDisplay1.innerText = `【５連続不正解】ヒント１：正解選手の「年齢」は「${answer.a}歳」です。`;
-    if (level === 2) hintDisplay2.innerText = `【１０連続不正解】ヒント２：正解選手の「身長」は「${answer.s}cm」です。`;
+    if (level === 1) hintDisplay1.innerText = `【５連続不正解】ヒント１：正解選手の「身長」は「${answer.s}cm」です。`;
+    if (level === 2) hintDisplay2.innerText = `【１０連続不正解】ヒント２：正解選手の「年齢」は「${answer.a}歳」です。`;
 }
 
 function addResultRow(p) {
@@ -233,7 +221,3 @@ initGame();
 </script>
 </body>
 </html>
-
-
-
-
