@@ -169,14 +169,15 @@ function submitGuess() {
 function giveUp() {
     if (!confirm("本当にギブアップしますか？")) return;
     
-    // 1. 正解メッセージを表示
-    resultMsg.innerText = `正解は「${answer.n}」でした。`;
+    // 1. 正解メッセージをセット
+    resultMsg.innerText = `正解は「${answer.n}」でした！`;
     
-    // 2. 画像コンテナを完全に隠す
-    imageContainer.style.display = "none"; 
+    // 2. 「箱」は見せる（メッセージを表示するため）
+    imageContainer.style.display = "block"; 
     
-    // 3. 画像のリンク先を空にする（これで「正解画像」という文字も消えます）
-    winImage.src = "";
+    // 3. 「画像」だけをピンポイントで消す（枠も文字も出さない）
+    winImage.style.display = "none";
+    winImage.src = ""; 
     
     // 4. ゲーム終了処理
     endGame();
@@ -232,6 +233,7 @@ initGame();
 </script>
 </body>
 </html>
+
 
 
 
