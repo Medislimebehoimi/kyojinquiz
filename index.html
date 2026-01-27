@@ -6,7 +6,6 @@
     <title>読売ジャイアンツ 選手当てクイズ 2026</title>
     <style>
         :root {
-            /* ジャイアンツオレンジに変更 */
             --orange: #ff8c00; --yellow: #b59f3b; --green: #538d4e; --gray: #3a3a3c; --black: #121213;
         }
         body { background-color: var(--black); color: white; font-family: 'Helvetica Neue', Arial, sans-serif; text-align: center; margin: 0; padding: 20px; }
@@ -18,17 +17,15 @@
         .wrong { background-color: var(--gray); border-color: var(--gray); }
         .input-area { margin-top: 30px; }
         select { padding: 12px; font-size: 18px; width: 250px; border-radius: 5px; border: none; cursor: pointer; }
-        .btn { padding: 12px 20px; font-size: 18px; cursor: pointer; border: none; border-radius: 5px; font-weight: bold; margin-left: 10px; }
+        .btn { padding: 12px 20px; font-size: 18px; cursor: pointer; border: none; border-radius: 5px; font-weight: bold; margin-left: 5px; }
         .submit-btn { background-color: var(--orange); color: white; }
+        .giveup-btn { background-color: #666; color: white; }
         .reset-btn { background-color: #ffffff; color: #000000; display: none; margin: 20px auto; }
         #result-image-container { display: none; margin: 20px auto; max-width: 450px; }
         #result-image-container img { width: 100%; border-radius: 10px; border: 4px solid var(--orange); }
-        
-        /* ヒントエリアの設定 */
         #hint-container { margin-top: 20px; min-height: 2.8em; line-height: 1.4; }
         #hint-display-1 { color: #ffad33; font-weight: bold; }
         #hint-display-2 { color: #FFD700; font-weight: bold; }
-
         .header-row { font-size: 10px; color: #818384; text-transform: uppercase; margin-bottom: 5px; }
     </style>
 </head>
@@ -40,6 +37,7 @@
     <div class="input-area" id="controls">
         <select id="playerSelect"><option value="">選手を選択...</option></select>
         <button class="btn submit-btn" id="submitBtn" onclick="submitGuess()">決定</button>
+        <button class="btn giveup-btn" id="giveupBtn" onclick="giveUp()">ギブアップ</button>
     </div>
 
     <div id="result-image-container">
@@ -61,7 +59,6 @@
     </div>
 
 <script>
-// --- 画像設定：GitHub上のファイル名を指定 ---
 const IMG_EXCELLENT = "appare.jpg"; 
 const IMG_GOOD = "katsu.png";
 
@@ -101,11 +98,13 @@ const players = [
 
 let answer;
 let guessCount = 0;
+let usedPlayerNames = []; // 回答済み選手を記録
 const hintDisplay1 = document.getElementById('hint-display-1');
 const hintDisplay2 = document.getElementById('hint-display-2');
 const playerSelect = document.getElementById('playerSelect');
 const resetBtn = document.getElementById('resetBtn');
 const submitBtn = document.getElementById('submitBtn');
+const giveupBtn = document.getElementById('giveupBtn');
 const imageContainer = document.getElementById('result-image-container');
 const winImage = document.getElementById('winImage');
 const resultMsg = document.getElementById('result-message');
@@ -113,16 +112,24 @@ const resultMsg = document.getElementById('result-message');
 function initGame() {
     answer = players[Math.floor(Math.random() * players.length)];
     guessCount = 0;
+    usedPlayerNames = [];
     hintDisplay1.innerText = "";
     hintDisplay2.innerText = "";
     resetBtn.style.display = "none";
     imageContainer.style.display = "none";
     submitBtn.disabled = false;
+    giveupBtn.disabled = false;
     playerSelect.disabled = false;
+    updateDropdown();
+}
+
+function updateDropdown() {
     playerSelect.innerHTML = '<option value="">選手を選択...</option>';
-    
     const posOrder = { "投手": 1, "捕手": 2, "内野手": 3, "外野手": 4 };
-    const sortedPlayers = [...players].sort((a, b) => {
+    
+    // 既答選手を除外してソート
+    const availablePlayers = players.filter(p => !usedPlayerNames.includes(p.n));
+    const sortedPlayers = availablePlayers.sort((a, b) => {
         if (posOrder[a.p] !== posOrder[b.p]) return posOrder[a.p] - posOrder[b.p];
         return a.n.localeCompare(b.n, 'ja');
     });
@@ -138,25 +145,35 @@ function initGame() {
 function submitGuess() {
     const guessName = playerSelect.value;
     if (!guessName) return;
+    
     guessCount++;
+    usedPlayerNames.push(guessName); // リストに追加
     const guessPlayer = players.find(p => p.n === guessName);
     addResultRow(guessPlayer);
+    updateDropdown(); // ドロップダウンを更新
 
     if (guessName === answer.n) {
         winImage.src = (guessCount <= 5) ? IMG_EXCELLENT : IMG_GOOD;
         resultMsg.innerText = (guessCount <= 5) ? `${guessCount}手で正解！あっぱれ！` : `${guessCount}手もかければ誰だって正解できる！喝だ！`;
-        imageContainer.style.display = "block";
-        submitBtn.disabled = true;
-        playerSelect.disabled = true;
-        resetBtn.style.display = "block";
+        endGame();
     } else {
-        if (guessCount === 5) {
-            giveHint(1);
-        } else if (guessCount === 10) {
-            giveHint(2);
-        }
+        if (guessCount === 5) giveHint(1);
+        if (guessCount === 10) giveHint(2);
     }
-    playerSelect.value = "";
+}
+
+function giveUp() {
+    if (!confirm("本当にギブアップしますか？")) return;
+    resultMsg.innerText = `正解は「${answer.n}」でした！`;
+    endGame();
+}
+
+function endGame() {
+    imageContainer.style.display = "block";
+    submitBtn.disabled = true;
+    giveupBtn.disabled = true;
+    playerSelect.disabled = true;
+    resetBtn.style.display = "block";
 }
 
 function resetGame() {
@@ -166,11 +183,8 @@ function resetGame() {
 }
 
 function giveHint(level) {
-    if (level === 1) {
-        hintDisplay1.innerText = `【５連続不正解】ヒント１：正解選手の「身長」は「${answer.s}cm」です。`;
-    } else if (level === 2) {
-        hintDisplay2.innerText = `【１０連続不正解】ヒント２：正解選手の「年齢」は「${answer.a}歳」です。`;
-    }
+    if (level === 1) hintDisplay1.innerText = `【５連続不正解】ヒント１：正解選手の「年齢」は「${answer.a}歳」です。`;
+    if (level === 2) hintDisplay2.innerText = `【１０連続不正解】ヒント２：正解選手の「身長」は「${answer.s}cm」です。`;
 }
 
 function addResultRow(p) {
@@ -204,5 +218,3 @@ initGame();
 </script>
 </body>
 </html>
-
-
