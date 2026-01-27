@@ -144,7 +144,7 @@ function submitGuess() {
 
     if (guessName === answer.n) {
         winImage.src = (guessCount <= 5) ? IMG_EXCELLENT : IMG_GOOD;
-        resultMsg.innerText = (guessCount <= 5) ? `${guessCount}手で正解！あっぱれ！` : `時${guessCount}手もかければ誰だって正解できる！喝だ！`;
+        resultMsg.innerText = (guessCount <= 5) ? `${guessCount}手で正解！あっぱれ！` : `${guessCount}手もかければ誰だって正解できる！喝だ！`;
         imageContainer.style.display = "block";
         submitBtn.disabled = true;
         playerSelect.disabled = true;
@@ -204,3 +204,4 @@ initGame();
 </script>
 </body>
 </html>
+
