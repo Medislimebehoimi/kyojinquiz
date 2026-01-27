@@ -114,7 +114,20 @@ function initGame() {
     submitBtn.disabled = false;
     playerSelect.disabled = false;
     playerSelect.innerHTML = '<option value="">選手を選択...</option>';
-    const sortedPlayers = [...players].sort((a, b) => a.n.localeCompare(b.n, 'ja'));
+
+    // ポジションの並び順を定義
+    const posOrder = { "投手": 1, "捕手": 2, "内野手": 3, "外野手": 4 };
+
+    // 並び替えロジック
+    const sortedPlayers = [...players].sort((a, b) => {
+        // 1. まずポジションの順番で比べる
+        if (posOrder[a.p] !== posOrder[b.p]) {
+            return posOrder[a.p] - posOrder[b.p];
+        }
+        // 2. ポジションが同じなら「あいうえお順」で比べる
+        return a.n.localeCompare(b.n, 'ja');
+    });
+
     sortedPlayers.forEach(p => {
         const opt = document.createElement('option');
         opt.value = p.n;
@@ -200,4 +213,5 @@ initGame();
 </body>
 
 </html>
+
 
