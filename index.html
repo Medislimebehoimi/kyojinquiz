@@ -157,7 +157,7 @@ function submitGuess() {
     if (guessName === answer.n) {
         winImage.src = (guessCount <= 5) ? IMG_EXCELLENT : IMG_GOOD;
         imageContainer.style.display = "block";
-        resultMsg.innerText = (guessCount <= 5) ? `${guessCount}手で正解！あっぱれ！` : `${guessCount}手もかければ誰でも正解できる！喝だ！`;
+        resultMsg.innerText = (guessCount <= 5) ? `${guessCount}手で正解！あっぱれ！` : `${guessCount}手で正解。${guessCount}手もかければ誰でも正解できる！喝だ！`;
         endGame();
     } else {
         if (guessCount === 5) giveHint(1);
@@ -221,4 +221,5 @@ initGame();
 </script>
 </body>
 </html>
+
 
